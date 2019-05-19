@@ -18,6 +18,18 @@ namespace EmbedStorage
 
         }
 
+        private string GetMimeByExtention(string ext)
+        {
+            if (string.IsNullOrEmpty(ext)) return "application/octet-stream";
+
+            if (!MimeTypes.DefaultMimeTypes.ContainsKey(ext))
+            {
+                return "application/octet-stream";
+            }
+
+            return MimeTypes.DefaultMimeTypes[ext];
+        }
+
         private async Task<bool> WrapFileAccess(Func<Task<bool>> access)
         {
             try
@@ -70,7 +82,7 @@ namespace EmbedStorage
 
                 var fs = Program.GetWorkFileSystem().OpenFile(storage.Path, System.IO.FileMode.Open, System.IO.FileAccess.Read, System.IO.FileShare.ReadWrite);
 
-                Response.ContentType = MimeTypes.DefaultMimeTypes[storage.Extention];
+                Response.ContentType = GetMimeByExtention(storage.Extention);
                 return Response.BinaryResponseAsync(fs, false);
             });
         }
@@ -92,7 +104,7 @@ namespace EmbedStorage
                 var fs = Program.GetWorkFileSystem().OpenFile(storage.Path, System.IO.FileMode.Open, System.IO.FileAccess.Read, System.IO.FileShare.ReadWrite);
                 Response.AddHeader("Content-Disposition", "attachment;filename=" + System.Net.WebUtility.UrlEncode(storage.FileName));
                 Response.AddHeader("Content-Length", storage.FileLength.ToString());
-                Response.ContentType = MimeTypes.DefaultMimeTypes[storage.Extention];
+                Response.ContentType = GetMimeByExtention(storage.Extention);
                 return Response.BinaryResponseAsync(fs, false);
             });
         }
@@ -126,8 +138,8 @@ namespace EmbedStorage
 
                 string filepath = dir + "/" + fileid + ext;
 
-                using (var fs = Program.GetWorkFileSystem().OpenFile(filepath, 
-                    System.IO.FileMode.OpenOrCreate, 
+                using (var fs = Program.GetWorkFileSystem().OpenFile(filepath,
+                    System.IO.FileMode.OpenOrCreate,
                     System.IO.FileAccess.ReadWrite))
                 {
                     await file.Data.CopyToAsync(fs);

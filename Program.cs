@@ -18,6 +18,7 @@ namespace EmbedStorage
         static void Main(string[] args)
         {
 
+
             Load();
 
             var url = "http://+:5000/";
